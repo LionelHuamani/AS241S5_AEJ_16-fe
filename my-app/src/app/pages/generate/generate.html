@@ -1,0 +1,116 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-icon">🎨</div>
+    <div>
+      <h1 class="page-title">Generar Imagen</h1>
+      <p class="page-subtitle">Crea imágenes únicas con inteligencia artificial</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form (ngSubmit)="onSubmit()" class="form">
+      <div class="input-group">
+        <label for="prompt-input" class="input-label">Describe tu imagen</label>
+        <div class="textarea-wrapper">
+          <textarea
+            id="prompt-input"
+            class="textarea-field"
+            placeholder="Ej: A futuristic city at night with neon lights and flying cars..."
+            [ngModel]="prompt()"
+            (ngModelChange)="prompt.set($event)"
+            name="prompt"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+        <span class="char-count">{{ prompt().length }} caracteres</span>
+      </div>
+
+      <div class="suggestions">
+        <span class="suggestions-label">✨ Sugerencias:</span>
+        <div class="suggestions-list">
+          @for (s of suggestions; track s) {
+            <button type="button" class="suggestion-chip" (click)="useSuggestion(s)">
+              {{ s }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="loading() || !prompt().trim()"
+        >
+          @if (loading()) {
+            <span class="spinner"></span> Generando...
+          } @else {
+            <span>🎨</span> Generar
+          }
+        </button>
+
+        @if (result()) {
+          <button type="button" class="btn btn-ghost" (click)="clearResult()">
+            🗑️ Limpiar
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-card">
+      <div class="loading-animation">
+        <div class="pulse-ring"></div>
+        <span class="loading-emoji">🎨</span>
+      </div>
+      <p class="loading-text">Generando tu imagen con IA...</p>
+      <p class="loading-sub">Esto puede tomar unos segundos</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-error">
+      <span>⚠️</span>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (result()) {
+    <div class="result-card">
+      <div class="result-header">
+        <span class="result-badge">✅ Imagen generada</span>
+        <span class="result-id">ID: {{ result()!.id }}</span>
+      </div>
+
+      <div class="image-container">
+        @if (!imageLoaded()) {
+          <div class="image-skeleton">
+            <span class="skeleton-icon">🖼️</span>
+            <p>Cargando imagen...</p>
+          </div>
+        }
+        <img
+          [src]="result()!.imageUrl"
+          [alt]="result()!.aiResponse"
+          class="generated-image"
+          [class.visible]="imageLoaded()"
+          (load)="onImageLoad()"
+        />
+      </div>
+
+      <div class="result-info">
+        <div class="result-item">
+          <span class="result-label">💬 Prompt usado</span>
+          <p class="result-prompt">{{ result()!.aiResponse }}</p>
+        </div>
+        <div class="result-meta">
+          <span class="result-tag">{{ result()!.type }}</span>
+          <span class="result-date">📅 {{ result()!.creationDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span class="status-badge active">🟢 Activo</span>
+        </div>
+      </div>
+    </div>
+  }
+</div>

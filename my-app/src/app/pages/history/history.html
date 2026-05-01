@@ -1,0 +1,143 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-icon">📋</div>
+    <div class="header-text">
+      <h1 class="page-title">Historial</h1>
+      <p class="page-subtitle">Todos los análisis e imágenes activos</p>
+    </div>
+    <button class="btn btn-refresh" (click)="loadData()" [disabled]="loading()">
+      <span [class.spinning]="loading()">🔄</span> Actualizar
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-grid">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="skeleton-card"></div>
+      }
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-error">
+      <span>⚠️</span>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+    @if (items().length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📭</span>
+        <p class="empty-title">Sin registros</p>
+        <p class="empty-sub">Aún no hay análisis ni imágenes generadas</p>
+      </div>
+    } @else {
+      <div class="stats-bar">
+        <span class="stat">
+          <span class="stat-num">{{ items().length }}</span> registros
+        </span>
+        <span class="stat">
+          <span class="stat-num">{{ items().length - (items() | filterByType:'image').length }}</span> transcripts
+        </span>
+        <span class="stat">
+          <span class="stat-num">{{ (items() | filterByType:'image').length }}</span> imágenes
+        </span>
+      </div>
+
+      <div class="items-grid">
+        @for (item of items(); track item.id) {
+          <div class="item-card" [class.image-card]="item.type === 'image'" (click)="openDetail(item)">
+            @if (item.type === 'image' && item.imageUrl) {
+              <div class="card-image">
+                <img [src]="item.imageUrl" [alt]="item.aiResponse" loading="lazy" />
+                <div class="card-overlay">
+                  <span class="overlay-icon">🔍</span>
+                </div>
+              </div>
+            } @else {
+              <div class="card-icon-area">
+                <span class="card-type-icon">🔍</span>
+              </div>
+            }
+
+            <div class="card-body">
+              <div class="card-top">
+                <span class="type-badge" [class.image-badge]="item.type === 'image'">
+                  {{ item.type === 'image' ? '🎨 Imagen' : '🔍 Transcript' }}
+                </span>
+                <span class="card-date">{{ item.creationDate | date:'dd/MM/yy' }}</span>
+              </div>
+
+              <p class="card-content">
+                {{ item.type === 'image' ? item.aiResponse : (item.url || item.webContent) }}
+              </p>
+
+              <div class="card-actions" (click)="$event.stopPropagation()">
+                <button
+                  class="action-btn delete-btn"
+                  (click)="deleteItem(item.id!)"
+                  [disabled]="deletingId() === item.id"
+                  title="Eliminar"
+                >
+                  @if (deletingId() === item.id) {
+                    <span class="mini-spinner"></span>
+                  } @else {
+                    🗑️
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- Modal de detalle -->
+@if (selectedItem()) {
+  <div class="modal-overlay" (click)="closeDetail()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title">
+          {{ selectedItem()!.type === 'image' ? '🎨 Detalle de imagen' : '🔍 Detalle de análisis' }}
+        </span>
+        <button class="modal-close" (click)="closeDetail()">✕</button>
+      </div>
+      <div class="modal-body">
+        @if (selectedItem()!.type === 'image' && selectedItem()!.imageUrl) {
+          <img [src]="selectedItem()!.imageUrl" [alt]="selectedItem()!.aiResponse" class="modal-image" />
+        }
+        <div class="modal-fields">
+          <div class="modal-field">
+            <span class="field-label">ID</span>
+            <span class="field-value mono">{{ selectedItem()!.id }}</span>
+          </div>
+          @if (selectedItem()!.url) {
+            <div class="modal-field">
+              <span class="field-label">URL</span>
+              <a [href]="selectedItem()!.url" target="_blank" class="field-link">{{ selectedItem()!.url }}</a>
+            </div>
+          }
+          @if (selectedItem()!.webContent) {
+            <div class="modal-field">
+              <span class="field-label">Contenido</span>
+              <p class="field-text">{{ selectedItem()!.webContent }}</p>
+            </div>
+          }
+          @if (selectedItem()!.aiResponse) {
+            <div class="modal-field">
+              <span class="field-label">Respuesta IA / Prompt</span>
+              <p class="field-text">{{ selectedItem()!.aiResponse }}</p>
+            </div>
+          }
+          <div class="modal-field">
+            <span class="field-label">Creado</span>
+            <span class="field-value">{{ selectedItem()!.creationDate | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

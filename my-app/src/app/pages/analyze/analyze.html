@@ -1,0 +1,106 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-icon">🔍</div>
+    <div>
+      <h1 class="page-title">Analizar URL</h1>
+      <p class="page-subtitle">Extrae y analiza el contenido de videos de Instagram</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form (ngSubmit)="onSubmit()" class="form">
+      <div class="input-group">
+        <label for="url-input" class="input-label">URL del video</label>
+        <div class="input-wrapper">
+          <span class="input-prefix">🔗</span>
+          <input
+            id="url-input"
+            type="url"
+            class="input-field"
+            placeholder="https://www.instagram.com/reel/..."
+            [ngModel]="url()"
+            (ngModelChange)="url.set($event)"
+            name="url"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="loading() || !url().trim()"
+        >
+          @if (loading()) {
+            <span class="spinner"></span> Analizando...
+          } @else {
+            <span>⚡</span> Analizar
+          }
+        </button>
+
+        @if (result()) {
+          <button type="button" class="btn btn-ghost" (click)="clearResult()">
+            🗑️ Limpiar
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error">
+      <span>⚠️</span>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (result()) {
+    <div class="result-card">
+      <div class="result-header">
+        <span class="result-badge">✅ Análisis completado</span>
+        <span class="result-id">ID: {{ result()!.id }}</span>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-item">
+          <span class="result-label">🔗 URL analizada</span>
+          <a [href]="result()!.url" target="_blank" class="result-link">
+            {{ result()!.url }}
+          </a>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">📝 Tipo</span>
+          <span class="result-tag">{{ result()!.type }}</span>
+        </div>
+
+        <div class="result-item full-width">
+          <span class="result-label">📄 Contenido extraído</span>
+          <div class="result-content">
+            {{ result()!.webContent || 'Sin contenido disponible' }}
+          </div>
+        </div>
+
+        <div class="result-item full-width">
+          <span class="result-label">🤖 Respuesta IA</span>
+          <div class="result-content">
+            {{ result()!.aiResponse || 'Sin respuesta disponible' }}
+          </div>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">📅 Creado</span>
+          <span class="result-date">{{ result()!.creationDate | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">🟢 Estado</span>
+          <span class="status-badge" [class.active]="result()!.status === 'A'">
+            {{ result()!.status === 'A' ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  }
+</div>
