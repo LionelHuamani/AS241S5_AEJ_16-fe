@@ -75,6 +75,13 @@
 
               <div class="card-actions" (click)="$event.stopPropagation()">
                 <button
+                  class="action-btn edit-btn"
+                  (click)="openEdit(item, $event)"
+                  title="Editar"
+                >
+                  ✏️
+                </button>
+                <button
                   class="action-btn delete-btn"
                   (click)="deleteItem(item.id!)"
                   [disabled]="deletingId() === item.id"
@@ -95,7 +102,7 @@
   }
 </div>
 
-<!-- Modal de detalle -->
+<!-- ── Modal detalle ── -->
 @if (selectedItem()) {
   <div class="modal-overlay" (click)="closeDetail()">
     <div class="modal" (click)="$event.stopPropagation()">
@@ -137,6 +144,121 @@
             <span class="field-value">{{ selectedItem()!.creationDate | date:'dd/MM/yyyy HH:mm:ss' }}</span>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Modal editar ── -->
+@if (editItem()) {
+  <div class="modal-overlay" (click)="closeEdit()">
+    <div class="modal modal-edit" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title">✏️ Editar registro</span>
+        <button class="modal-close" (click)="closeEdit()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        @if (saveSuccess()) {
+          <div class="save-success">
+            <span>✅</span> Guardado correctamente
+          </div>
+        }
+
+        <!-- ID (solo lectura) -->
+        <div class="edit-field">
+          <label class="edit-label">ID</label>
+          <input class="edit-input edit-readonly" [value]="editItem()!.id" readonly />
+        </div>
+
+        <!-- Tipo -->
+        <div class="edit-field">
+          <label class="edit-label">Tipo</label>
+          <select
+            class="edit-input edit-select"
+            [ngModel]="editForm().type"
+            (ngModelChange)="updateField('type', $event)"
+            name="type"
+          >
+            <option value="transcript">transcript</option>
+            <option value="image">image</option>
+          </select>
+        </div>
+
+        <!-- URL (solo para transcripts) -->
+        @if (editItem()!.type !== 'image') {
+          <div class="edit-field">
+            <label class="edit-label">URL</label>
+            <input
+              class="edit-input"
+              type="url"
+              placeholder="https://..."
+              [ngModel]="editForm().url"
+              (ngModelChange)="updateField('url', $event)"
+              name="url"
+            />
+          </div>
+
+          <div class="edit-field">
+            <label class="edit-label">Contenido web</label>
+            <textarea
+              class="edit-input edit-textarea"
+              rows="4"
+              placeholder="Contenido extraído..."
+              [ngModel]="editForm().webContent"
+              (ngModelChange)="updateField('webContent', $event)"
+              name="webContent"
+            ></textarea>
+          </div>
+        }
+
+        <!-- Respuesta IA / Prompt -->
+        <div class="edit-field">
+          <label class="edit-label">
+            {{ editItem()!.type === 'image' ? 'Prompt' : 'Respuesta IA' }}
+          </label>
+          <textarea
+            class="edit-input edit-textarea"
+            rows="3"
+            [placeholder]="editItem()!.type === 'image' ? 'Describe la imagen...' : 'Respuesta de la IA...'"
+            [ngModel]="editForm().aiResponse"
+            (ngModelChange)="updateField('aiResponse', $event)"
+            name="aiResponse"
+          ></textarea>
+        </div>
+
+        <!-- URL de imagen (solo para imágenes) -->
+        @if (editItem()!.type === 'image') {
+          <div class="edit-field">
+            <label class="edit-label">URL de imagen</label>
+            <input
+              class="edit-input"
+              type="url"
+              placeholder="https://..."
+              [ngModel]="editForm().imageUrl"
+              (ngModelChange)="updateField('imageUrl', $event)"
+              name="imageUrl"
+            />
+            @if (editForm().imageUrl) {
+              <img [src]="editForm().imageUrl" alt="preview" class="edit-img-preview" />
+            }
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeEdit()">Cancelar</button>
+        <button
+          class="btn btn-save"
+          (click)="saveEdit()"
+          [disabled]="saving()"
+        >
+          @if (saving()) {
+            <span class="mini-spinner white"></span> Guardando...
+          } @else {
+            💾 Guardar cambios
+          }
+        </button>
       </div>
     </div>
   </div>
