@@ -1,0 +1,32 @@
+# Node modules
+node_modules
+npm-debug.log
+
+# Angular cache
+.angular
+dist
+
+# IDE files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Test files
+coverage
+*.spec.ts
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
