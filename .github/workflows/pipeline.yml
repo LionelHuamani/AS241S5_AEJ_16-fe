@@ -9,7 +9,7 @@ on:
     branches:
       - develop
       - main
-  workflow_dispatch: # Permite ejecución manual desde GitHub Actions UI
+  workflow_dispatch: 
 
 jobs:
   sonarcloud:
@@ -17,13 +17,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout del código
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necesario para SonarCloud (análisis de historial completo)
+          fetch-depth: 0 
 
-      # 2. Configurar Node.js 20
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -31,17 +29,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: my-app/package-lock.json
 
-      # 3. Instalar dependencias
       - name: Install Dependencies
         working-directory: my-app
         run: npm ci --legacy-peer-deps
 
-      # 4. Build de producción
       - name: Build Angular App
         working-directory: my-app
         run: npm run build -- --configuration production
 
-      # 5. Análisis con SonarCloud
       - name: Build and Analyze with SonarCloud
         uses: sonarsource/sonarcloud-github-action@v3.1.0
         env:
